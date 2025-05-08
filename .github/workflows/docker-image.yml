@@ -1,18 +1,23 @@
-name: Docker Image CI
+# Use the official PHP image as the base image
+FROM php:7.4-apache
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+# Copy the application files into the container
+COPY . /var/www/html
 
-jobs:
+# Set the working directory in the container
+WORKDIR /var/www/html
 
-  build:
+# Install necessary PHP extensions
+RUN apt-get update && apt-get install -y \
+    libicu-dev \
+    libzip-dev \
+    && docker-php-ext-install \
+    intl \
+    zip \
+    && a2enmod rewrite
 
-    runs-on: ubuntu-latest
+# Expose port 80
+EXPOSE 80
 
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+# Define the entry point for the container
+CMD ["apache2-foreground"]
